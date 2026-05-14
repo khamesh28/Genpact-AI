@@ -43,6 +43,11 @@ const ProjectCatalog     = lazy(() => import('./pages/ProjectCatalog'));
 const CatalogDetailPage  = lazy(() => import('./pages/CatalogDetailPage'));
 const CatalogFormPage    = lazy(() => import('./pages/CatalogFormPage'));
 const ProjectIntakeForm  = lazy(() => import('./pages/ProjectIntakeForm'));
+const CloudCost          = lazy(() => import('./pages/CloudCost'));
+const Collaboration      = lazy(() => import('./pages/Collaboration'));
+const ResourceAllocation = lazy(() => import('./pages/ResourceAllocation'));
+const Connectors         = lazy(() => import('./pages/Connectors'));
+const Announcements      = lazy(() => import('./pages/Announcements'));
 
 // ─── Shared fallback for all Suspense boundaries ──────────────────────────────
 const PageLoader = () => <LoadingSpinner fullScreen />;
@@ -142,6 +147,13 @@ const AppRoutes = () => (
         <Route path="/teams/:teamId/catalog/new"                      element={<ProtectedLayout><CatalogFormPage /></ProtectedLayout>} />
         <Route path="/teams/:teamId/catalog/:catalogId/edit"          element={<ProtectedLayout><CatalogFormPage /></ProtectedLayout>} />
         <Route path="/teams/:teamId/catalog/:catalogId"               element={<ProtectedLayout><CatalogDetailPage /></ProtectedLayout>} />
+
+        {/* Insights */}
+        <Route path="/teams/:teamId/cloud-cost"           element={<ProtectedLayout><CloudCost /></ProtectedLayout>} />
+        <Route path="/teams/:teamId/collaboration"        element={<ProtectedLayout><Collaboration /></ProtectedLayout>} />
+        <Route path="/teams/:teamId/resource-allocation"  element={<ProtectedLayout><ResourceAllocation /></ProtectedLayout>} />
+        <Route path="/teams/:teamId/connectors"           element={<ProtectedLayout><Connectors /></ProtectedLayout>} />
+        <Route path="/teams/:teamId/announcements"        element={<ProtectedLayout><Announcements /></ProtectedLayout>} />
 
         {/* Catch-all */}
         <Route path="*" element={<AuthRedirect />} />

@@ -13,6 +13,7 @@ import DownloadReportButton from '../components/shared/DownloadReportButton';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import ActivityEntryModal from '../components/dashboard/ActivityEntryModal';
 import DashboardSidebar from '../components/dashboard/DashboardSidebar';
+import WeeklyChart from '../components/dashboard/WeeklyChart';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -274,6 +275,11 @@ const Dashboard = () => {
         <StatCard icon={Users}       label="Meetings"     value={activity.meetings.length}  sub={formatUIDuration(meetMins)}  color="bg-indigo-500" />
         <StatCard icon={CheckSquare} label="Tasks"        value={activity.tasks.length}     sub={formatUIDuration(taskMins)}  color="bg-emerald-500" />
         <StatCard icon={TrendingUp}  label="Productivity" value={`${activity.productivity}/10`} sub="self-assessed" color="bg-orange-500" />
+      </div>
+
+      {/* ── Weekly chart ── */}
+      <div className="mb-6">
+        <WeeklyChart />
       </div>
 
       {loading ? (

@@ -1,5 +1,6 @@
 import React from 'react';
 import Sidebar from './Sidebar';
+import AIAssistant from './AIAssistant';
 
 const Layout = ({ children }) => (
   <div className="flex h-screen bg-gray-50 overflow-hidden">
@@ -9,6 +10,7 @@ const Layout = ({ children }) => (
         {children}
       </main>
     </div>
+    <AIAssistant />
   </div>
 );
 

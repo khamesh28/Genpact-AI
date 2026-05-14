@@ -62,6 +62,12 @@ const activityService = {
     const response = await api.get(`/teams/${teamId}/admin/comparison`, { params });
     return response.data;
   },
+
+  // Get per-day breakdown for weekly chart
+  getDailyStats: async (days = 7) => {
+    const response = await api.get('/activities/stats/daily', { params: { days } });
+    return response.data;
+  },
 };
 
 export default activityService;

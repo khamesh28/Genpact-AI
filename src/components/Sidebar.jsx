@@ -6,7 +6,7 @@ import {
   LayoutDashboard, FolderOpen, Newspaper, History, BarChart3,
   Users, Shield, Settings, LogOut, ChevronLeft, ChevronRight,
   BookOpen, Zap, Activity, Menu, X, Calendar,
-  UserCheck, FileText,
+  UserCheck, FileText, Cloud, MessageSquare, PieChart, Plug, Megaphone,
 } from 'lucide-react';
 import TeamSwitcher from './team/TeamSwitcher';
 import NotificationBell from './notifications/NotificationBell';
@@ -200,6 +200,9 @@ const Sidebar = () => {
               {currentTeam && (
                 <NavItem to={`/teams/${currentTeam._id}/newsletters`} icon={Newspaper} label="Newsletters" collapsed={collapsed} activeCheck={() => isPrefix(`/teams/${currentTeam._id}/newsletters`)} />
               )}
+              {currentTeam && (
+                <NavItem to={`/teams/${currentTeam._id}/announcements`} icon={Megaphone} label="Announcements" collapsed={collapsed} activeCheck={() => isPrefix(`/teams/${currentTeam._id}/announcements`)} />
+              )}
             </NavSection>
 
             <NavSection label="Personal" collapsed={collapsed}>
@@ -209,6 +212,15 @@ const Sidebar = () => {
                 <NavItem to={`/teams/${currentTeam._id}/bandwidth`} icon={Activity} label="My Bandwidth" collapsed={collapsed} activeCheck={() => isPrefix(`/teams/${currentTeam._id}/bandwidth`)} />
               )}
             </NavSection>
+
+            {currentTeam && (
+              <NavSection label="Insights" collapsed={collapsed}>
+                <NavItem to={`/teams/${currentTeam._id}/cloud-cost`} icon={Cloud} label="Cloud & Cost" collapsed={collapsed} activeCheck={() => isPrefix(`/teams/${currentTeam._id}/cloud-cost`)} />
+                <NavItem to={`/teams/${currentTeam._id}/resource-allocation`} icon={PieChart} label="Resource Allocation" collapsed={collapsed} activeCheck={() => isPrefix(`/teams/${currentTeam._id}/resource-allocation`)} />
+                <NavItem to={`/teams/${currentTeam._id}/collaboration`} icon={MessageSquare} label="Collaboration" collapsed={collapsed} activeCheck={() => isPrefix(`/teams/${currentTeam._id}/collaboration`)} />
+                <NavItem to={`/teams/${currentTeam._id}/connectors`} icon={Plug} label="Connectors" collapsed={collapsed} activeCheck={() => isPrefix(`/teams/${currentTeam._id}/connectors`)} />
+              </NavSection>
+            )}
 
 
             {currentTeam && isManagerRole && !isAdmin() && (
