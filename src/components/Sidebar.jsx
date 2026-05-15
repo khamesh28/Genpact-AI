@@ -138,10 +138,10 @@ const Sidebar = () => {
             <div className="w-8 h-8 bg-gray-900 rounded-xl flex items-center justify-center flex-shrink-0">
               <Calendar className="w-4 h-4 text-white" />
             </div>
-            <span className="text-base font-bold text-gray-900 tracking-tight">WorkTracker</span>
+            <span className="text-base font-bold text-gray-900 tracking-tight">AI Hub</span>
           </Link>
         ) : (
-          <SidebarTooltip label="WorkTracker" show>
+          <SidebarTooltip label="AI Hub" show>
             <Link to="/">
               <div className="w-8 h-8 bg-gray-900 rounded-xl flex items-center justify-center hover:bg-gray-800 transition-colors">
                 <Calendar className="w-4 h-4 text-white" />
