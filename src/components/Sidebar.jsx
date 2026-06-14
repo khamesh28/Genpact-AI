@@ -6,7 +6,7 @@ import {
   LayoutDashboard, FolderOpen, Newspaper, History, BarChart3,
   Users, Shield, Settings, LogOut, ChevronLeft, ChevronRight,
   BookOpen, Zap, Activity, Menu, X, Calendar,
-  UserCheck, FileText, Cloud, MessageSquare, PieChart, Plug, Megaphone,
+  UserCheck, FileText, Cloud, MessageSquare, PieChart, Plug, Megaphone, Heart, Trophy, BellRing,
 } from 'lucide-react';
 import TeamSwitcher from './team/TeamSwitcher';
 import NotificationBell from './notifications/NotificationBell';
@@ -219,6 +219,9 @@ const Sidebar = () => {
                 <NavItem to={`/teams/${currentTeam._id}/resource-allocation`} icon={PieChart} label="Resource Allocation" collapsed={collapsed} activeCheck={() => isPrefix(`/teams/${currentTeam._id}/resource-allocation`)} />
                 <NavItem to={`/teams/${currentTeam._id}/collaboration`} icon={MessageSquare} label="Collaboration" collapsed={collapsed} activeCheck={() => isPrefix(`/teams/${currentTeam._id}/collaboration`)} />
                 <NavItem to={`/teams/${currentTeam._id}/connectors`} icon={Plug} label="Connectors" collapsed={collapsed} activeCheck={() => isPrefix(`/teams/${currentTeam._id}/connectors`)} />
+                <NavItem to={`/teams/${currentTeam._id}/mood`} icon={Heart} label="Mood & Wellbeing" collapsed={collapsed} activeCheck={() => isPrefix(`/teams/${currentTeam._id}/mood`)} />
+                <NavItem to={`/teams/${currentTeam._id}/leaderboard`} icon={Trophy} label="Leaderboard" collapsed={collapsed} activeCheck={() => isPrefix(`/teams/${currentTeam._id}/leaderboard`)} />
+                <NavItem to={`/teams/${currentTeam._id}/notifications-centre`} icon={BellRing} label="Notification Centre" collapsed={collapsed} activeCheck={() => isPrefix(`/teams/${currentTeam._id}/notifications-centre`)} />
               </NavSection>
             )}
 

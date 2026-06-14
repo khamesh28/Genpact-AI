@@ -48,6 +48,9 @@ const Collaboration      = lazy(() => import('./pages/Collaboration'));
 const ResourceAllocation = lazy(() => import('./pages/ResourceAllocation'));
 const Connectors         = lazy(() => import('./pages/Connectors'));
 const Announcements      = lazy(() => import('./pages/Announcements'));
+const MoodDashboard      = lazy(() => import('./pages/MoodDashboard'));
+const Leaderboard        = lazy(() => import('./pages/Leaderboard'));
+const NotificationCentre = lazy(() => import('./pages/NotificationCentre'));
 
 // ─── Shared fallback for all Suspense boundaries ──────────────────────────────
 const PageLoader = () => <LoadingSpinner fullScreen />;
@@ -153,7 +156,10 @@ const AppRoutes = () => (
         <Route path="/teams/:teamId/collaboration"        element={<ProtectedLayout><Collaboration /></ProtectedLayout>} />
         <Route path="/teams/:teamId/resource-allocation"  element={<ProtectedLayout><ResourceAllocation /></ProtectedLayout>} />
         <Route path="/teams/:teamId/connectors"           element={<ProtectedLayout><Connectors /></ProtectedLayout>} />
-        <Route path="/teams/:teamId/announcements"        element={<ProtectedLayout><Announcements /></ProtectedLayout>} />
+        <Route path="/teams/:teamId/announcements"         element={<ProtectedLayout><Announcements /></ProtectedLayout>} />
+        <Route path="/teams/:teamId/mood"                 element={<ProtectedLayout><MoodDashboard /></ProtectedLayout>} />
+        <Route path="/teams/:teamId/leaderboard"          element={<ProtectedLayout><Leaderboard /></ProtectedLayout>} />
+        <Route path="/teams/:teamId/notifications-centre" element={<ProtectedLayout><NotificationCentre /></ProtectedLayout>} />
 
         {/* Catch-all */}
         <Route path="*" element={<AuthRedirect />} />
