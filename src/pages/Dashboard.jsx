@@ -8,12 +8,15 @@ import activityService from '../services/activityService';
 import reportService from '../services/reportService';
 import projectService from '../services/projectService';
 import { useTeam } from '../context/TeamContext';
+import { useAuth } from '../context/AuthContext';
 import DeleteConfirmationModal from '../components/shared/DeleteConfirmationModal';
 import DownloadReportButton from '../components/shared/DownloadReportButton';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import ActivityEntryModal from '../components/dashboard/ActivityEntryModal';
 import DashboardSidebar from '../components/dashboard/DashboardSidebar';
 import WeeklyChart from '../components/dashboard/WeeklyChart';
+import ActivityHeatmap from '../components/ActivityHeatmap';
+import { exportWeeklyReport } from '../utils/pdfExport';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -55,6 +58,7 @@ const StatCard = ({ icon: Icon, label, value, sub, color }) => (
 
 const Dashboard = () => {
   const { currentTeam } = useTeam();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -260,10 +264,20 @@ const Dashboard = () => {
           </button>
 
           {currentTeam && (
-            <div className="ml-2 border-l border-gray-200 pl-2">
+            <div className="ml-2 border-l border-gray-200 pl-2 flex items-center gap-2">
               <DownloadReportButton
                 label="Download" variant="secondary" disabled={downloading} options={downloadOptions}
               />
+              <button
+                onClick={async () => {
+                  const res = await import('../services/activityService').then(m => m.default.getDailyStats(7));
+                  exportWeeklyReport(currentTeam.name, user?.name || 'You', res?.data || []);
+                }}
+                className="px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg flex items-center gap-1.5 transition-colors"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                Export PDF
+              </button>
             </div>
           )}
         </div>
@@ -275,6 +289,11 @@ const Dashboard = () => {
         <StatCard icon={Users}       label="Meetings"     value={activity.meetings.length}  sub={formatUIDuration(meetMins)}  color="bg-indigo-500" />
         <StatCard icon={CheckSquare} label="Tasks"        value={activity.tasks.length}     sub={formatUIDuration(taskMins)}  color="bg-emerald-500" />
         <StatCard icon={TrendingUp}  label="Productivity" value={`${activity.productivity}/10`} sub="self-assessed" color="bg-orange-500" />
+      </div>
+
+      {/* ── Activity Heatmap ── */}
+      <div className="mb-6">
+        <ActivityHeatmap />
       </div>
 
       {/* ── Weekly chart ── */}

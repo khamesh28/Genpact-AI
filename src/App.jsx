@@ -51,6 +51,10 @@ const Announcements      = lazy(() => import('./pages/Announcements'));
 const MoodDashboard      = lazy(() => import('./pages/MoodDashboard'));
 const Leaderboard        = lazy(() => import('./pages/Leaderboard'));
 const NotificationCentre = lazy(() => import('./pages/NotificationCentre'));
+const StandupBot         = lazy(() => import('./pages/StandupBot'));
+const TeamStatusBoard    = lazy(() => import('./pages/TeamStatusBoard'));
+const TodaysPriorities   = lazy(() => import('./pages/TodaysPriorities'));
+const OKRTracker         = lazy(() => import('./pages/OKRTracker'));
 
 // ─── Shared fallback for all Suspense boundaries ──────────────────────────────
 const PageLoader = () => <LoadingSpinner fullScreen />;
@@ -160,6 +164,10 @@ const AppRoutes = () => (
         <Route path="/teams/:teamId/mood"                 element={<ProtectedLayout><MoodDashboard /></ProtectedLayout>} />
         <Route path="/teams/:teamId/leaderboard"          element={<ProtectedLayout><Leaderboard /></ProtectedLayout>} />
         <Route path="/teams/:teamId/notifications-centre" element={<ProtectedLayout><NotificationCentre /></ProtectedLayout>} />
+        <Route path="/teams/:teamId/standup"              element={<ProtectedLayout><StandupBot /></ProtectedLayout>} />
+        <Route path="/teams/:teamId/team-status"          element={<ProtectedLayout><TeamStatusBoard /></ProtectedLayout>} />
+        <Route path="/teams/:teamId/priorities"           element={<ProtectedLayout><TodaysPriorities /></ProtectedLayout>} />
+        <Route path="/teams/:teamId/okr"                  element={<ProtectedLayout><OKRTracker /></ProtectedLayout>} />
 
         {/* Catch-all */}
         <Route path="*" element={<AuthRedirect />} />

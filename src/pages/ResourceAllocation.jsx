@@ -4,22 +4,22 @@ import {
 } from 'recharts';
 import { Users, Briefcase, TrendingUp, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTeam } from '../context/TeamContext';
-import teamService from '../services/teamService';
+import api from '../services/api';
 import projectService from '../services/projectService';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
-
-// ─── helpers ──────────────────────────────────────────────────────────────────
 
 const roleColor = (role) => {
   const map = {
     admin:   { bg: 'bg-red-100',    text: 'text-red-700'    },
     manager: { bg: 'bg-purple-100', text: 'text-purple-700' },
+    Manager: { bg: 'bg-purple-100', text: 'text-purple-700' },
     owner:   { bg: 'bg-amber-100',  text: 'text-amber-700'  },
     sme:     { bg: 'bg-cyan-100',   text: 'text-cyan-700'   },
     member:  { bg: 'bg-green-100',  text: 'text-green-700'  },
+    Member:  { bg: 'bg-green-100',  text: 'text-green-700'  },
     viewer:  { bg: 'bg-gray-100',   text: 'text-gray-500'   },
   };
-  return map[(role || '').toLowerCase()] || map.viewer;
+  return map[role] || map.viewer;
 };
 
 const allocationColor = (pct) => {
@@ -35,7 +35,6 @@ const Avatar = ({ name, size = 9 }) => (
   </div>
 );
 
-// Seed from name so colors are stable per member
 const seedColor = (name = '') => {
   const palette = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#0ea5e9','#ef4444','#14b8a6'];
   let h = 0;
@@ -43,52 +42,92 @@ const seedColor = (name = '') => {
   return palette[h];
 };
 
-// ─── main component ───────────────────────────────────────────────────────────
-
 const ResourceAllocation = () => {
   const { currentTeam } = useTeam();
-  const [members, setMembers]   = useState([]);
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [expanded, setExpanded] = useState(null);
+  const [enriched, setEnriched]     = useState([]);
+  const [projects, setProjects]     = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [expanded, setExpanded]     = useState(null);
   const [filterRole, setFilterRole] = useState('All');
 
   useEffect(() => {
     if (!currentTeam?._id) return;
-    Promise.all([
-      teamService.getTeamMembers(currentTeam._id),
-      projectService.getProjects(currentTeam._id),
-    ])
-      .then(([membersRes, projectsRes]) => {
-        setMembers(membersRes.data || []);
-        setProjects(projectsRes.data || []);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [compRes, projRes] = await Promise.all([
+          api.get(`/teams/${currentTeam._id}/admin/comparison`),
+          projectService.getProjects(currentTeam._id),
+        ]);
+
+        const members = compRes.data?.data?.members || [];
+        const allProjects = projRes.data || [];
+        setProjects(allProjects);
+
+        // Build userId → Set<projectId> map from actual task assignments
+        const userProjectMap = {};
+        const projectMap = {};
+        allProjects.forEach(p => { projectMap[p._id] = p; });
+
+        // Fetch tasks for each project (up to 5 projects to keep it fast)
+        const projectsToQuery = allProjects.slice(0, 5);
+        await Promise.all(
+          projectsToQuery.map(async (p) => {
+            try {
+              const tRes = await api.get(`/teams/${currentTeam._id}/projects/${p._id}/tasks`, {
+                params: { limit: 100 }
+              });
+              const tasks = tRes.data?.data || [];
+              tasks.forEach(t => {
+                const uid = t.assignedTo?._id || t.assignedTo;
+                if (!uid) return;
+                const uidStr = String(uid);
+                if (!userProjectMap[uidStr]) userProjectMap[uidStr] = new Set();
+                userProjectMap[uidStr].add(p._id);
+              });
+            } catch {}
+          })
+        );
+
+        // Enrich each member with real allocation % and real assigned projects
+        const result = members.map(m => {
+          const stats = m.stats || {};
+          // Allocation based on actual avg hours vs 8h standard workday; floor at 5 if they have any activity
+          const rawAlloc = stats.avgHoursPerDay > 0
+            ? Math.min(100, Math.round((stats.avgHoursPerDay / 8) * 100))
+            : 0;
+          const allocation = rawAlloc;
+
+          const assignedProjectIds = userProjectMap[String(m.userId)] || new Set();
+          const assignedProjects = [...assignedProjectIds]
+            .map(pid => projectMap[pid])
+            .filter(Boolean);
+
+          return { ...m, allocation, assignedProjects };
+        });
+
+        setEnriched(result);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, [currentTeam?._id]);
 
-  // Enrich members with mock allocation data (since no real allocation tracking exists yet)
-  const enriched = members.map((m, i) => {
-    const assignedProjects = projects.filter((_, pi) => (i + pi) % 3 !== 0).slice(0, Math.min(3, projects.length));
-    const allocation = 30 + ((i * 17 + assignedProjects.length * 13) % 65);
-    return { ...m, assignedProjects, allocation };
-  });
-
-  const roles = ['All', ...new Set(members.map(m => m.role).filter(Boolean))];
+  const roles = ['All', ...new Set(enriched.map(m => m.role).filter(Boolean))];
   const filtered = filterRole === 'All' ? enriched : enriched.filter(m => m.role === filterRole);
 
-  // Summary stats
   const avgAllocation = enriched.length
     ? Math.round(enriched.reduce((a, m) => a + m.allocation, 0) / enriched.length)
     : 0;
-  const overloaded   = enriched.filter(m => m.allocation >= 90).length;
-  const underutilized = enriched.filter(m => m.allocation < 40).length;
+  const overloaded    = enriched.filter(m => m.allocation >= 90).length;
 
-  // Chart data
   const chartData = enriched.map(m => ({
-    name: m.user?.name?.split(' ')[0] || 'User',
+    name: m.name?.split(' ')[0] || 'User',
     allocation: m.allocation,
-    color: seedColor(m.user?.name),
+    color: seedColor(m.name),
   }));
 
   if (loading) return <LoadingSpinner />;
@@ -104,7 +143,7 @@ const ResourceAllocation = () => {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Resource Allocation</h1>
-            <p className="text-sm text-gray-500">Team workload and project assignment overview</p>
+            <p className="text-sm text-gray-500">Team workload based on logged hours (last 30 days)</p>
           </div>
         </div>
       </div>
@@ -112,10 +151,10 @@ const ResourceAllocation = () => {
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
-          { icon: Users,        label: 'Team Members',    value: members.length,  sub: 'total headcount',    color: 'bg-gray-900'    },
-          { icon: TrendingUp,   label: 'Avg Allocation',  value: `${avgAllocation}%`, sub: 'across team',   color: 'bg-indigo-500'  },
-          { icon: AlertCircle,  label: 'Overloaded',      value: overloaded,      sub: '≥ 90% allocated',   color: 'bg-red-500'     },
-          { icon: Briefcase,    label: 'Active Projects', value: projects.length, sub: 'in this team',      color: 'bg-emerald-500' },
+          { icon: Users,       label: 'Team Members',   value: enriched.length,  sub: 'total headcount',   color: 'bg-gray-900'   },
+          { icon: TrendingUp,  label: 'Avg Allocation', value: `${avgAllocation}%`, sub: 'across team',    color: 'bg-indigo-500' },
+          { icon: AlertCircle, label: 'Overloaded',     value: overloaded,       sub: '≥ 90% allocated',   color: 'bg-red-500'    },
+          { icon: Briefcase,   label: 'Active Projects',value: projects.length,  sub: 'in this team',      color: 'bg-emerald-500'},
         ].map(({ icon: Icon, label, value, sub, color }) => (
           <div key={label} className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4 flex items-center gap-4">
             <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
@@ -133,7 +172,7 @@ const ResourceAllocation = () => {
       {/* Allocation chart */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8">
         <h2 className="font-bold text-gray-800 mb-1">Team Allocation Overview</h2>
-        <p className="text-xs text-gray-400 mb-5">Current workload percentage per member</p>
+        <p className="text-xs text-gray-400 mb-5">% of standard 8h workday used (based on logged hours)</p>
         {chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={chartData} barSize={36}>
@@ -179,23 +218,24 @@ const ResourceAllocation = () => {
           <div className="space-y-3">
             {filtered.map(m => {
               const rc = roleColor(m.role);
-              const isOpen = expanded === m._id;
+              const isOpen = expanded === m.userId;
               return (
-                <div key={m._id} className="border border-gray-100 rounded-xl overflow-hidden">
-                  {/* Row */}
+                <div key={m.userId} className="border border-gray-100 rounded-xl overflow-hidden">
                   <button
                     className="w-full flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors text-left"
-                    onClick={() => setExpanded(isOpen ? null : m._id)}
+                    onClick={() => setExpanded(isOpen ? null : m.userId)}
                   >
-                    <Avatar name={m.user?.name} />
+                    <Avatar name={m.name} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <p className="font-semibold text-gray-900 text-sm truncate">{m.user?.name}</p>
+                        <p className="font-semibold text-gray-900 text-sm truncate">{m.name}</p>
                         <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${rc.bg} ${rc.text}`}>
                           {m.role}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-400">{m.user?.email}</p>
+                      <p className="text-xs text-gray-400">
+                        {m.stats?.activeDays || 0} active days · {m.stats?.totalTasks || 0} tasks · {m.stats?.avgHoursPerDay || 0}h/day avg
+                      </p>
                     </div>
 
                     {/* Allocation bar */}
@@ -222,12 +262,16 @@ const ResourceAllocation = () => {
                     </div>
                   </button>
 
-                  {/* Expanded project list */}
                   {isOpen && (
                     <div className="border-t border-gray-100 bg-gray-50 px-4 py-3">
+                      <div className="flex gap-6 mb-3 text-xs text-gray-500">
+                        <span>Total hours: <strong className="text-gray-800">{m.stats?.totalHours || 0}h</strong></span>
+                        <span>Tasks completed: <strong className="text-gray-800">{m.stats?.completedTasks || 0}/{m.stats?.totalTasks || 0}</strong></span>
+                        <span>Avg productivity: <strong className="text-gray-800">{m.stats?.avgProductivity || 0}%</strong></span>
+                      </div>
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Assigned Projects</p>
                       {m.assignedProjects.length === 0 ? (
-                        <p className="text-xs text-gray-400 italic">No projects assigned</p>
+                        <p className="text-xs text-gray-400 italic">No project tasks found</p>
                       ) : (
                         <div className="flex flex-wrap gap-2">
                           {m.assignedProjects.map(p => (

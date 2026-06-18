@@ -88,6 +88,14 @@ const CloudCost = () => {
   return (
     <div className="max-w-[1400px] mx-auto px-4 py-8 bg-gray-50 min-h-screen">
 
+      {/* Demo Mode Banner */}
+      <div className="mb-6 flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+        <AlertTriangle size={16} className="text-amber-500 flex-shrink-0" />
+        <p className="text-sm text-amber-800">
+          <strong>Demo Mode</strong> — This page displays sample data. Connect real Azure credentials via the Connectors page to see live spend.
+        </p>
+      </div>
+
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-1">

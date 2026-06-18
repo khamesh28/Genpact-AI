@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#111827"/>
+  <!-- AI Hub icon: stylised calendar/spark -->
+  <rect x="128" y="140" width="256" height="232" rx="24" fill="none" stroke="#ffffff" stroke-width="20"/>
+  <!-- Calendar top bar -->
+  <rect x="128" y="140" width="256" height="60" rx="24" fill="#ffffff"/>
+  <rect x="148" y="172" width="216" height="28" fill="#111827"/>
+  <!-- Spark/AI symbol in center -->
+  <path d="M256 230 L270 262 L304 256 L270 250 L256 282 L242 250 L208 256 L242 262 Z" fill="#ffffff"/>
+  <!-- Bottom dots representing data -->
+  <circle cx="176" cy="310" r="12" fill="#6366f1"/>
+  <circle cx="220" cy="310" r="12" fill="#6366f1"/>
+  <circle cx="264" cy="310" r="12" fill="#ffffff" opacity="0.4"/>
+  <circle cx="308" cy="310" r="12" fill="#ffffff" opacity="0.4"/>
+  <circle cx="352" cy="310" r="12" fill="#ffffff" opacity="0.2"/>
+</svg>

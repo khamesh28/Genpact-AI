@@ -5,6 +5,7 @@ import { useSprint } from '../context/SprintContext';
 import { useTeam } from '../context/TeamContext';
 import { CheckCircle, XCircle, Calendar, Target, ChevronsLeft, Play, LayoutGrid, List, Plus } from 'lucide-react';
 import TrackingBoard from '../components/TrackingBoard';
+import BurndownChart from '../components/sprint/BurndownChart';
 import SprintRetrospective from '../components/sprint/SprintRetrospective';
 import SprintPlanningView from '../components/sprint/SprintPlanningView';
 import WorkItemIcon from '../components/shared/WorkItemIcon';
@@ -469,6 +470,13 @@ const DONE_STATUSES = ['resolved', 'completed', 'closed', 'done'];
           </div>
         </div>
       </div>
+
+      {/* Burndown Chart – only for active/completed sprints with story points */}
+      {currentSprint.status !== 'planning' && (
+        <div className="px-4 sm:px-6 lg:px-8 pt-4">
+          <BurndownChart sprint={currentSprint} tasks={tasks} />
+        </div>
+      )}
 
       {/* Sprint Content: Planning View vs Board/List */}
       {currentSprint.status === 'planning' ? (

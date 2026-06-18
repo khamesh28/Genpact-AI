@@ -8,6 +8,8 @@
     "axios": "^1.6.2",
     "ckeditor5": "^47.5.0",
     "date-fns": "^3.0.6",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
     "lucide-react": "^0.303.0",
     "react": "^18.2.0",
     "react-datepicker": "^4.24.0",

@@ -7,9 +7,11 @@ import {
   Users, Shield, Settings, LogOut, ChevronLeft, ChevronRight,
   BookOpen, Zap, Activity, Menu, X, Calendar,
   UserCheck, FileText, Cloud, MessageSquare, PieChart, Plug, Megaphone, Heart, Trophy, BellRing,
+  ClipboardList, MapPin, Target, Moon, Sun,
 } from 'lucide-react';
 import TeamSwitcher from './team/TeamSwitcher';
 import NotificationBell from './notifications/NotificationBell';
+import { useDarkMode } from '../hooks/useDarkMode';
 const normalizeRole = (role) => String(role || '').trim().toLowerCase();
 
 // Custom tooltip for collapsed icon labels
@@ -113,6 +115,7 @@ const Sidebar = () => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [dark, setDark] = useDarkMode();
   const isManagerRole = normalizeRole(teamMembership?.role) === 'manager';
   const expanded = !collapsed;
 
@@ -186,6 +189,18 @@ const Sidebar = () => {
           </NavSection>
         ) : (
           <>
+            <NavSection label="My Day" collapsed={collapsed}>
+              {currentTeam && (
+                <NavItem to={`/teams/${currentTeam._id}/priorities`} icon={Target} label="Today's Priorities" collapsed={collapsed} activeCheck={() => isPrefix(`/teams/${currentTeam._id}/priorities`)} />
+              )}
+              {currentTeam && (
+                <NavItem to={`/teams/${currentTeam._id}/standup`} icon={ClipboardList} label="Daily Standup" collapsed={collapsed} activeCheck={() => isPrefix(`/teams/${currentTeam._id}/standup`)} />
+              )}
+              {currentTeam && (
+                <NavItem to={`/teams/${currentTeam._id}/team-status`} icon={MapPin} label="Team Status" collapsed={collapsed} activeCheck={() => isPrefix(`/teams/${currentTeam._id}/team-status`)} />
+              )}
+            </NavSection>
+
             <NavSection label="Workspace" collapsed={collapsed}>
               {currentTeam && (
                 <NavItem to={`/teams/${currentTeam._id}`} icon={LayoutDashboard} label="Today" collapsed={collapsed} activeCheck={() => isExact(`/teams/${currentTeam._id}`)} />
@@ -212,6 +227,12 @@ const Sidebar = () => {
                 <NavItem to={`/teams/${currentTeam._id}/bandwidth`} icon={Activity} label="My Bandwidth" collapsed={collapsed} activeCheck={() => isPrefix(`/teams/${currentTeam._id}/bandwidth`)} />
               )}
             </NavSection>
+
+            {currentTeam && (
+              <NavSection label="Goals" collapsed={collapsed}>
+                <NavItem to={`/teams/${currentTeam._id}/okr`} icon={Target} label="OKR Tracker" collapsed={collapsed} activeCheck={() => isPrefix(`/teams/${currentTeam._id}/okr`)} />
+              </NavSection>
+            )}
 
             {currentTeam && (
               <NavSection label="Insights" collapsed={collapsed}>
@@ -254,6 +275,22 @@ const Sidebar = () => {
             <NotificationBell placement="right" sidebarExpanded={expanded} />
           </SidebarTooltip>
         )}
+
+        {/* Dark mode toggle */}
+        <SidebarTooltip label={dark ? 'Light Mode' : 'Dark Mode'} show={collapsed}>
+          <button
+            onClick={() => setDark(d => !d)}
+            className={`group flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-gray-100 transition-colors w-full ${collapsed ? 'justify-center' : ''}`}
+          >
+            {dark
+              ? <Sun className="w-5 h-5 flex-shrink-0 text-amber-400 group-hover:text-amber-500" />
+              : <Moon className="w-5 h-5 flex-shrink-0 text-gray-400 group-hover:text-gray-600" />
+            }
+            {expanded && (
+              <span className="text-sm font-medium text-gray-700">{dark ? 'Light Mode' : 'Dark Mode'}</span>
+            )}
+          </button>
+        </SidebarTooltip>
 
         {/* Profile */}
         <SidebarTooltip label={user?.name || 'Profile'} show={collapsed}>
